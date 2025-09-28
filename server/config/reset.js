@@ -1,6 +1,7 @@
-import { pool } from "./databse";
-import './dotenv'
-import giftData from "../data/gifts";
+import { pool } from "./database.js";
+import './dotenv.js'
+import giftData from "../data/gifts.js";
+import { text } from "express";
 
 const createGiftsTable = async () => {
     const createTableQuery = `
@@ -25,3 +26,31 @@ const createGiftsTable = async () => {
     }
 
 }
+
+const seedGiftsTable = async () => {
+    await createGiftsTable()
+    giftData.forEach((gift) => {
+        const insertQuery = {
+            text: 'INSERT INTO gifts (name, pricePoint, audience, image, description, submittedBy, submittedOn) VALUES ($1, $2, $3, $4, $5, $6, $7) ' 
+        }
+        const values = [
+            gift.name,
+            gift.pricePoint,
+            gift.audience,
+            gift.image,
+            gift.description,
+            gift.submittedBy,
+            gift.submittedOn
+        ]
+
+        pool.query(insertQuery, values, (err) => {
+            if (err) {
+                console.error('Error inserting gift', err)
+                return
+            }
+            console.log(`${gift.name} added successfully`)
+        })
+    })
+}
+
+seedGiftsTable()
